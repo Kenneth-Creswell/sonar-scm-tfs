@@ -21,6 +21,7 @@ package org.sonar.plugins.scm.tfs;
 
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.fs.FileSystem;
@@ -46,15 +47,17 @@ import java.util.concurrent.Future;
 public class TfsBlameCommand extends BlameCommand {
 
   private static final Logger LOG = LoggerFactory.getLogger(TfsBlameCommand.class);
+  private final TfsConfiguration configuration;
   private final CommandExecutor commandExecutor;
   private TempFolder temp;
 
-  public TfsBlameCommand(TempFolder temp) {
-    this(CommandExecutor.create(), temp);
+  public TfsBlameCommand(TfsConfiguration configuration, TempFolder temp) {
+    this(CommandExecutor.create(), configuration, temp);
   }
 
-  TfsBlameCommand(CommandExecutor commandExecutor, TempFolder temp) {
+  TfsBlameCommand(CommandExecutor commandExecutor, TfsConfiguration configuration, TempFolder temp) {
     this.commandExecutor = commandExecutor;
+    this.configuration = configuration;
     this.temp = temp;
   }
 
@@ -64,11 +67,10 @@ public class TfsBlameCommand extends BlameCommand {
     FileSystem fs = input.fileSystem();
     LOG.debug("Working directory: " + fs.baseDir().getAbsolutePath());
     ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
-    List<Future<Void>> tasks = new ArrayList<Future<Void>>();
+    List<Future<Void>> tasks = new ArrayList<>();
     for (InputFile inputFile : input.filesToBlame()) {
       tasks.add(submitTask(tfsExe, fs, output, executorService, inputFile));
     }
-
     for (Future<Void> task : tasks) {
       try {
         task.get();
@@ -112,13 +114,17 @@ public class TfsBlameCommand extends BlameCommand {
   }
 
   private File extractTfsAnnotate() {
-    File tfsExe = temp.newFile("SonarTfsAnnotate", ".exe");
-    try {
-      Files.write(Resources.toByteArray(this.getClass().getResource("/SonarTfsAnnotate.exe")), tfsExe);
-    } catch (IOException e) {
-      throw new IllegalStateException("Unable to extract SonarTfsAnnotate.exe", e);
+    if (StringUtils.isEmpty(this.configuration.sonarTfsAnnotatePath())) {
+      File tfsExe = temp.newFile("SonarTfsAnnotate", ".exe");
+      try {
+        Files.write(Resources.toByteArray(this.getClass().getResource("/SonarTfsAnnotate.exe")), tfsExe);
+      } catch (IOException e) {
+        throw new IllegalStateException("Unable to extract SonarTfsAnnotate.exe", e);
+      }
+      return tfsExe;
+    } else {
+      return new File(this.configuration.sonarTfsAnnotatePath());
     }
-    return tfsExe;
   }
 
   public int execute(Command cl, StreamConsumer consumer, StreamConsumer stderr) {

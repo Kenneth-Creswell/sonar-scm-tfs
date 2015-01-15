@@ -19,18 +19,22 @@
  */
 package org.sonar.plugins.scm.tfs;
 
-import com.google.common.collect.ImmutableList;
 import org.sonar.api.SonarPlugin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class TfsPlugin extends SonarPlugin {
 
+  @SuppressWarnings("unchecked")
   @Override
   public List getExtensions() {
-    return ImmutableList.of(
-      TfsScmProvider.class,
-      TfsBlameCommand.class);
+    List result = new ArrayList();
+    result.add(TfsScmProvider.class);
+    result.add(TfsBlameCommand.class);
+    result.add(TfsConfiguration.class);
+    result.addAll(TfsConfiguration.getProperties());
+    return result;
   }
 
 }

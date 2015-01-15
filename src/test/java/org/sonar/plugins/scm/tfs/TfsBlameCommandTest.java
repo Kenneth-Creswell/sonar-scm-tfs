@@ -33,6 +33,7 @@ import org.sonar.api.batch.fs.internal.DefaultInputFile;
 import org.sonar.api.batch.scm.BlameCommand.BlameInput;
 import org.sonar.api.batch.scm.BlameCommand.BlameOutput;
 import org.sonar.api.batch.scm.BlameLine;
+import org.sonar.api.config.Settings;
 import org.sonar.api.utils.DateUtils;
 import org.sonar.api.utils.command.Command;
 import org.sonar.api.utils.command.CommandExecutor;
@@ -95,7 +96,7 @@ public class TfsBlameCommandTest {
     });
 
     when(input.filesToBlame()).thenReturn(Arrays.<InputFile>asList(inputFile));
-    new TfsBlameCommand(commandExecutor, tempFolder).blame(input, result);
+    new TfsBlameCommand(commandExecutor, configuration(), tempFolder).blame(input, result);
     verify(result).blameResult(inputFile,
       Arrays.asList(new BlameLine().date(DateUtils.parseDate("2014-07-10")).revision("26274").author("SND\\DinSoft_cp"),
         new BlameLine().date(DateUtils.parseDate("2014-07-10")).revision("26274").author("SND\\DinSoft_cp")));
@@ -126,7 +127,7 @@ public class TfsBlameCommandTest {
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage("Unable to blame file src/foo.xoo. No blame info at line 2. Is file commited?");
     when(input.filesToBlame()).thenReturn(Arrays.<InputFile>asList(inputFile));
-    new TfsBlameCommand(commandExecutor, tempFolder).blame(input, result);
+    new TfsBlameCommand(commandExecutor, configuration(), tempFolder).blame(input, result);
   }
 
   @Test
@@ -154,7 +155,11 @@ public class TfsBlameCommandTest {
     thrown.expectMessage(".exe src/foo.xoo] failed: My error");
 
     when(input.filesToBlame()).thenReturn(Arrays.<InputFile>asList(inputFile));
-    new TfsBlameCommand(commandExecutor, tempFolder).blame(input, result);
+    new TfsBlameCommand(commandExecutor, configuration(), tempFolder).blame(input, result);
+  }
+
+  private static TfsConfiguration configuration() {
+    return new TfsConfiguration(new Settings());
   }
 
 }
