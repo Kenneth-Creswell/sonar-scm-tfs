@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
-    <version>18</version>
+    <version>19</version>
   </parent>
+
+  <groupId>org.codehaus.sonar.plugins</groupId>
   <artifactId>sonar-scm-tfs-plugin</artifactId>
   <name>SonarQube :: Plugins :: SCM :: TFS</name>
   <version>2.0-SNAPSHOT</version>
   <packaging>sonar-plugin</packaging>
-  <description>TFS SCM Provider.</description>
+
+  <description>TFS SCM Provider</description>
   <url>http://redirect.sonarsource.com/plugins/scmtfs.html</url>
   <inceptionYear>2014</inceptionYear>
 
@@ -33,6 +38,12 @@
       <name>Julien Henry</name>
       <timezone>+1</timezone>
     </developer>
+    <developer>
+      <id>shuraa</id>
+      <name>Alexander Morozov</name>
+      <email>alexander.v.morozov@gmail.com</email>
+      <timezone>+6</timezone>
+    </developer>
   </developers>
 
   <scm>
@@ -52,9 +63,7 @@
   </ciManagement>
   
   <properties>
-    <sonar.buildVersion>5.0-RC3</sonar.buildVersion>
-    <sonar.pluginName>TFS</sonar.pluginName>
-    <sonar.pluginClass>org.sonar.plugins.scm.tfs.TfsPlugin</sonar.pluginClass>
+    <sonar.buildVersion>5.0</sonar.buildVersion>
   </properties>
 
   <dependencies>
@@ -70,7 +79,6 @@
       <version>${sonar.buildVersion}</version>
       <scope>provided</scope>
     </dependency>
-
     <!-- unit tests -->
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
@@ -84,7 +92,6 @@
       <version>1.3</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -98,7 +105,13 @@
       <plugin>
         <groupId>org.codehaus.sonar</groupId>
         <artifactId>sonar-packaging-maven-plugin</artifactId>
+        <configuration>
+          <pluginKey>tfs</pluginKey>
+          <pluginName>TFS</pluginName>
+          <pluginClass>org.sonar.plugins.scm.tfs.TfsPlugin</pluginClass>
+        </configuration>
       </plugin>
     </plugins>
   </build>
+
 </project>
