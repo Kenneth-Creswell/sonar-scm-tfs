@@ -19,8 +19,16 @@
  */
 package org.sonar.plugins.scm.tfs;
 
-import com.google.common.io.Files;
-import com.google.common.io.Resources;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +42,8 @@ import org.sonar.api.utils.command.CommandExecutor;
 import org.sonar.api.utils.command.StreamConsumer;
 import org.sonar.api.utils.command.StringStreamConsumer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
 
 public class TfsBlameCommand extends BlameCommand {
 
@@ -99,18 +100,25 @@ public class TfsBlameCommand extends BlameCommand {
     Command cl = createCommandLine(tfsExe, fs.baseDir(), filename);
     TfsBlameConsumer consumer = new TfsBlameConsumer(filename);
     StringStreamConsumer stderr = new StringStreamConsumer();
-
     int exitCode = execute(cl, consumer, stderr);
-    if (exitCode != 0) {
+    if (exitCode == 0) {
+      List<BlameLine> lines = consumer.getLines();
+      if (lines.size() == inputFile.lines() - 1) {
+        // SONARPLUGINS-3097 Tfs do not report blame on last empty line
+        lines.add(lines.get(lines.size() - 1));
+      }
+      output.blameResult(inputFile, lines);
+    } else if (exitCode == 4) {
+      System.err.println("WARN: skipping " + inputFile.relativePath() + " because of TFS blame command [" + cl.toString() + "] failed: "
+              + stderr.getOutput());
+      List<BlameLine> blameLines = new ArrayList<>(inputFile.lines());
+      for (int i = 0; i < inputFile.lines(); i++) {
+        blameLines.add(new BlameLine());
+      }
+      output.blameResult(inputFile, blameLines);
+    } else {
       throw new IllegalStateException("The TFS blame command [" + cl.toString() + "] failed: " + stderr.getOutput());
     }
-    List<BlameLine> lines = consumer.getLines();
-    if (lines.size() == inputFile.lines() - 1) {
-      // SONARPLUGINS-3097 Tfs do not report blame on last empty line
-      lines.add(lines.get(lines.size() - 1));
-    }
-    output.blameResult(inputFile, lines);
-
   }
 
   private File extractTfsAnnotate() {
