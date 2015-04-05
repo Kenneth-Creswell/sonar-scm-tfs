@@ -50,7 +50,7 @@ public class TfsBlameCommand extends BlameCommand {
   private static final Logger LOG = LoggerFactory.getLogger(TfsBlameCommand.class);
   private final TfsConfiguration configuration;
   private final CommandExecutor commandExecutor;
-  private TempFolder temp;
+  private final TempFolder temp;
 
   public TfsBlameCommand(TfsConfiguration configuration, TempFolder temp) {
     this(CommandExecutor.create(), configuration, temp);
@@ -97,7 +97,7 @@ public class TfsBlameCommand extends BlameCommand {
 
   private void blame(File tfsExe, FileSystem fs, InputFile inputFile, BlameOutput output) {
     String filename = inputFile.relativePath();
-    Command cl = createCommandLine(tfsExe, fs.baseDir(), filename);
+    Command cl = createCommandLine(tfsExe, inputFile.file());
     TfsBlameConsumer consumer = new TfsBlameConsumer(filename);
     StringStreamConsumer stderr = new StringStreamConsumer();
     int exitCode = execute(cl, consumer, stderr);
@@ -140,10 +140,9 @@ public class TfsBlameCommand extends BlameCommand {
     return commandExecutor.execute(cl, consumer, stderr, -1);
   }
 
-  private Command createCommandLine(File tfsExe, File workingDirectory, String filename) {
+  private Command createCommandLine(File tfsExe, File file) {
     Command cl = Command.create(tfsExe.getAbsolutePath());
-    cl.setDirectory(workingDirectory);
-    cl.addArgument(filename);
+    cl.addArgument(file.getAbsolutePath());
     return cl;
   }
 

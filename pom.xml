@@ -50,6 +50,7 @@
     <connection>scm:git:git@github.com:SonarCommunity/sonar-scm-tfs.git</connection>
     <developerConnection>scm:git:git@github.com:SonarCommunity/sonar-scm-tfs.git</developerConnection>
     <url>https://github.com/SonarCommunity/sonar-scm-tfs</url>
+    <tag>HEAD</tag>
   </scm>
   
   <issueManagement>
@@ -59,11 +60,13 @@
   
   <ciManagement>
     <system>Cloudbees</system>
-    <url>TODO</url>
+    <url>https://sonarplugins.ci.cloudbees.com/job/scm-tfs/</url>
   </ciManagement>
   
   <properties>
     <sonar.buildVersion>5.0</sonar.buildVersion>
+    <sonar.pluginName>TFS</sonar.pluginName>
+    <sonar.pluginClass>org.sonar.plugins.scm.tfs.TfsPlugin</sonar.pluginClass>
   </properties>
 
   <dependencies>
